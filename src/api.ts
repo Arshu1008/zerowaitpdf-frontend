@@ -1,3 +1,7 @@
+/** Backend origin. Empty in dev (Vite proxies /api); set VITE_API_BASE in production. */
+export const API_BASE = ((import.meta.env.VITE_API_BASE as string | undefined) ?? '').trim().replace(/\/+$/, '')
+export const apiUrl = (path: string) => `${API_BASE}${path}`
+
 export type JobView = {
   id: string
   status: 'queued' | 'processing' | 'finalizing' | 'completed' | 'failed' | 'cancelled'
@@ -18,7 +22,7 @@ async function readError(res: Response): Promise<string> {
 export async function inspectPdf(file: File): Promise<{ pages: number | null; encrypted: boolean }> {
   const fd = new FormData()
   fd.append('file', file)
-  const res = await fetch('/api/v1/files/inspect', { method: 'POST', body: fd })
+  const res = await fetch(apiUrl('/api/v1/files/inspect'), { method: 'POST', body: fd })
   if (!res.ok) throw new Error(await readError(res))
   return res.json()
 }
@@ -32,7 +36,7 @@ export function startJob(
 ): { promise: Promise<JobView>; abort: () => void } {
   const xhr = new XMLHttpRequest()
   const promise = new Promise<JobView>((resolve, reject) => {
-    xhr.open('POST', `/api/v1/pdf/${tool}`)
+    xhr.open('POST', apiUrl(`/api/v1/pdf/${tool}`))
     xhr.upload.onprogress = (e) => e.lengthComputable && onUpload(Math.round((e.loaded / e.total) * 100))
     xhr.onload = () => {
       try {
@@ -54,15 +58,15 @@ export function startJob(
 }
 
 export async function getJob(id: string): Promise<JobView> {
-  const res = await fetch(`/api/v1/jobs/${id}/status`)
+  const res = await fetch(apiUrl(`/api/v1/jobs/${id}/status`))
   if (!res.ok) throw new Error(await readError(res))
   return res.json()
 }
 
 export async function cancelJob(id: string) {
-  await fetch(`/api/v1/jobs/${id}/cancel`, { method: 'POST' })
+  await fetch(apiUrl(`/api/v1/jobs/${id}/cancel`), { method: 'POST' })
 }
 
 export async function deleteJob(id: string) {
-  await fetch(`/api/v1/jobs/${id}`, { method: 'DELETE' })
+  await fetch(apiUrl(`/api/v1/jobs/${id}`), { method: 'DELETE' })
 }

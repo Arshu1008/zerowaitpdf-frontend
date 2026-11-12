@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { cancelJob, deleteJob, getJob, inspectPdf, startJob, type JobView } from '../api'
+import { apiUrl, cancelJob, deleteJob, getJob, inspectPdf, startJob, type JobView } from '../api'
 import { bySlug, type Tool } from '../tools'
 
 type Item = { id: string; file: File; pages?: number | null; encrypted?: boolean; error?: string }
@@ -156,7 +156,7 @@ function ToolWorkspace({ tool }: { tool: Tool }) {
           <h2>Your file is ready</h2>
           <p className="muted">{job.result.filename} · {fmtSize(job.result.size)}{job.result.files > 1 ? ` · ${job.result.files} files in ZIP` : ''}</p>
           <div className="row center">
-            <a className="btn primary lg" href={job.result.download_url} download={job.result.filename}>Download {job.result.mimetype === 'application/zip' ? 'ZIP' : job.result.mimetype.startsWith('image') ? 'image' : 'PDF'}</a>
+            <a className="btn primary lg" href={apiUrl(job.result.download_url)} download={job.result.filename}>Download {job.result.mimetype === 'application/zip' ? 'ZIP' : job.result.mimetype.startsWith('image') ? 'image' : 'PDF'}</a>
           </div>
           <div className="row center gap">
             <button className="btn ghost" onClick={reset}>Process another file</button>
